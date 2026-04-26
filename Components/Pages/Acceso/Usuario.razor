@@ -1,12 +1,12 @@
-@page "/usuario2"
+@page "/usuario"
 @rendermode InteractiveServer
 @inject FrontBlazorTutorial.Services.ApiService Api
-@inject IJSRuntime JS
+@inject FrontBlazorTutorial.Services.SpService Sp
 
-<PageTitle>Usuarios</PageTitle>
+<PageTitle>Usuario</PageTitle>
 
 <div class="container mt-4">
-    <h3>Usuarios</h3>
+    <h3>Usuario</h3>
 
     @* ───────── ALERTA ───────── *@
     @if (!string.IsNullOrEmpty(mensaje))
@@ -20,7 +20,7 @@
     @* ───────── BOTON NUEVO ───────── *@
     @if (!mostrarFormulario)
     {
-        <button class="btn btn-primary mb-3" @onclick="NuevoRegistro">Nuevo Usuario</button>
+        <button class="btn btn-primary mb-3" @onclick="NuevoRegistro">Nueva usuario</button>
     }
 
     @* ───────── LIMITE DE REGISTROS ───────── *@
@@ -35,17 +35,17 @@
     {
         <div class="card mb-3">
             <div class="card-header">
-                @(editando ? "Editar Usuario" : "Nuevo Usuario")
+                @(editando ? "Editar Red" : "Nueva Red")
             </div>
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label class="form-label">Email</label>
-                        <input class="form-control" type="email" @bind="campoEmail" disabled="@editando" />
+                        <input class="form-control" @bind="email" />
                     </div>
                     <div class="col-md-6 mb-3">
-                        <label class="form-label">Contrasena</label>
-                        <input class="form-control" type="password" @bind="campoContrasena" />
+                        <label class="form-label">Contraseña</label>
+                        <input class="form-control" type="url" @bind="contrasena" />
                     </div>
                 </div>
                 <button class="btn btn-success me-2" @onclick="GuardarRegistro">Guardar</button>
@@ -71,8 +71,6 @@
             <thead class="table-dark">
                 <tr>
                     <th>Email</th>
-                    <th>Contrasena</th>
-                    <th>Acciones</th>
                 </tr>
             </thead>
             <tbody>
@@ -80,7 +78,6 @@
                 {
                     <tr>
                         <td>@reg["email"]</td>
-                        <td>***</td>
                         <td>
                             <button class="btn btn-warning btn-sm me-1"
                                     @onclick="() => EditarRegistro(reg)">Editar</button>
@@ -95,20 +92,25 @@
 
     @if (!cargando && !registros.Any())
     {
-        <div class="alert alert-warning">No se encontraron registros en la tabla usuario.</div>
+        <div class="alert alert-warning">No se encontraron registros en la tabla usuarios.</div>
     }
 </div>
 
 @code {
     private List<Dictionary<string, object?>> registros = new();
+
     private bool cargando = true;
     private bool mostrarFormulario = false;
     private bool editando = false;
     private string mensaje = string.Empty;
     private bool exito = false;
+    
+    // Campos del formulario
 
-    private string campoEmail = string.Empty;
-    private string campoContrasena = string.Empty;
+    private string email = string.Empty;
+    private string contrasena = string.Empty;
+
+
     private int? limite = null;
 
     protected override async Task OnInitializedAsync()
@@ -126,8 +128,8 @@
     private void NuevoRegistro()
     {
         editando = false;
-        campoEmail = string.Empty;
-        campoContrasena = string.Empty;
+        email = string.Empty;
+        contrasena = string.Empty;
         mostrarFormulario = true;
         mensaje = string.Empty;
     }
@@ -135,8 +137,7 @@
     private void EditarRegistro(Dictionary<string, object?> reg)
     {
         editando = true;
-        campoEmail = reg["email"]?.ToString() ?? "";
-        campoContrasena = "";
+        email = reg["email"]?.ToString() ?? "";
         mostrarFormulario = true;
         mensaje = string.Empty;
     }
@@ -145,25 +146,20 @@
     {
         var datos = new Dictionary<string, object?>
         {
-            ["email"] = campoEmail,
-            ["contrasena"] = campoContrasena
+            ["email"] = email,
+            ["contrasena"] = contrasena
         };
 
         if (editando)
-        {
+        {//revisar aca
             datos.Remove("email");
-            var confirmar = await JS.InvokeAsync<bool>("confirm",
-                $"¿Está seguro de actualizar el Usuario '{campoEmail}'?");
-            if (!confirmar) return;
-            var resultado = await Api.ActualizarAsync("usuario", "email", campoEmail, datos,
-                camposEncriptar: "contrasena");
+            var resultado = await Api.ActualizarAsync("usuario", "email", email.ToString(), datos, "contrasena");
             exito = resultado.exito;
             mensaje = resultado.mensaje;
         }
         else
         {
-            var resultado = await Api.CrearAsync("usuario", datos,
-                camposEncriptar: "contrasena");
+            var resultado = await Api.CrearAsync("usuario", datos, "contrasena");
             exito = resultado.exito;
             mensaje = resultado.mensaje;
         }
@@ -177,11 +173,8 @@
 
     private async Task EliminarRegistro(Dictionary<string, object?> reg)
     {
-        string email = reg["email"]?.ToString() ?? "";
-        var confirmar = await JS.InvokeAsync<bool>("confirm",
-            $"¿Está seguro de eliminar el Usuario '{email}'?");
-        if (!confirmar) return;
-        var resultado = await Api.EliminarAsync("usuario", "email", email);
+        string codigo = reg["email"]?.ToString() ?? "";
+        var resultado = await Api.EliminarAsync("usuario", "email", codigo);
         exito = resultado.exito;
         mensaje = resultado.mensaje;
 
@@ -194,4 +187,6 @@
         mostrarFormulario = false;
         mensaje = string.Empty;
     }
+    
+
 }
