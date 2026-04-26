@@ -1,0 +1,232 @@
+@page "/rol_usuario"
+@rendermode InteractiveServer
+@inject FrontBlazorTutorial.Services.ApiService Api
+@inject IJSRuntime JS
+
+<PageTitle>Rol Usuario</PageTitle>
+
+<div class="container mt-4">
+    <h3>Rol Usuario</h3>
+
+    @* ───────── ALERTA ───────── *@
+    @if (!string.IsNullOrEmpty(mensaje))
+    {
+        <div class="alert @(exito ? "alert-success" : "alert-danger") alert-dismissible fade show">
+            @mensaje
+            <button type="button" class="btn-close" @onclick="() => mensaje = string.Empty"></button>
+        </div>
+    }
+
+    @* ───────── BOTON NUEVO ───────── *@
+    @if (!mostrarFormulario)
+    {
+        <button class="btn btn-primary mb-3" @onclick="NuevoRegistro">Nuevo Rol Usuario</button>
+    }
+
+    @* ───────── LIMITE DE REGISTROS ───────── *@
+    <div class="d-flex align-items-center mb-3">
+        <label class="form-label me-2 mb-0">Limite:</label>
+        <input class="form-control me-2" type="number" style="width:100px" @bind="limite" />
+        <button class="btn btn-outline-secondary" @onclick="CargarRegistros">Cargar</button>
+    </div>
+
+    @* ───────── FORMULARIO ───────── *@
+    @if (mostrarFormulario)
+    {
+        <div class="card mb-3">
+            <div class="card-header">
+                @(editando ? "Editar Rol Usuario" : "Nuevo Rol Usuario")
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Usuario (email)</label>
+                        <select class="form-select" @bind="campoFkEmail">
+                            <option value="">-- Seleccione un usuario --</option>
+                            @foreach (var u in listaUsuarios)
+                            {
+                                <option value="@u["email"]">@u["email"]</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Rol</label>
+                        <select class="form-select" @bind="campoFkIdRol">
+                            <option value="0">-- Seleccione un rol --</option>
+                            @foreach (var r in listaRoles)
+                            {
+                                <option value="@Convert.ToInt32(r["id"])">@r["nombre"]</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <button class="btn btn-success me-2" @onclick="GuardarRegistro">Guardar</button>
+                <button class="btn btn-secondary" @onclick="Cancelar">Cancelar</button>
+            </div>
+        </div>
+    }
+
+    @* ───────── SPINNER ───────── *@
+    @if (cargando)
+    {
+        <div class="d-flex justify-content-center my-4">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+        </div>
+    }
+
+    @* ───────── TABLA ───────── *@
+    @if (!cargando && registros.Any())
+    {
+        <table class="table table-striped table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Usuario (email)</th>
+                    <th>Rol</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var reg in registros)
+                {
+                    <tr>
+                        <td>@reg["id"]</td>
+                        <td>@reg["fkemail"]</td>
+                        <td>
+                            @{
+                                var rolId = Convert.ToInt32(reg["fkidrol"] ?? 0);
+                                var rolInfo = listaRoles
+                                    .FirstOrDefault(r => Convert.ToInt32(r["id"]) == rolId);
+                            }
+                            @((rolInfo != null) ? rolInfo["nombre"] : reg["fkidrol"])
+                        </td>
+                        <td>
+                            <button class="btn btn-warning btn-sm me-1"
+                                    @onclick="() => EditarRegistro(reg)">Editar</button>
+                            <button class="btn btn-danger btn-sm"
+                                    @onclick="() => EliminarRegistro(reg)">Eliminar</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+
+    @if (!cargando && !registros.Any())
+    {
+        <div class="alert alert-warning">No se encontraron registros en la tabla rol_usuario.</div>
+    }
+</div>
+
+@code {
+    private List<Dictionary<string, object?>> registros = new();
+    private List<Dictionary<string, object?>> listaUsuarios = new();
+    private List<Dictionary<string, object?>> listaRoles = new();
+
+    private bool cargando = true;
+    private bool mostrarFormulario = false;
+    private bool editando = false;
+    private string mensaje = string.Empty;
+    private bool exito = false;
+
+    // Campos del formulario
+    private int campoId = 0;
+    private string campoFkEmail = string.Empty;
+    private int campoFkIdRol = 0;
+
+    private int? limite = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarRegistros();
+    }
+
+    private async Task CargarRegistros()
+    {
+        cargando = true;
+        registros = await Api.ListarAsync("rol_usuario", limite);
+        listaUsuarios = await Api.ListarAsync("usuario");
+        listaRoles = await Api.ListarAsync("rol");
+        cargando = false;
+    }
+
+    private void NuevoRegistro()
+    {
+        editando = false;
+        campoId = 0;
+        campoFkEmail = string.Empty;
+        campoFkIdRol = 0;
+        mostrarFormulario = true;
+        mensaje = string.Empty;
+    }
+
+    private void EditarRegistro(Dictionary<string, object?> reg)
+    {
+        editando = true;
+        campoId = int.TryParse(reg["id"]?.ToString(), out int i) ? i : 0;
+        campoFkEmail = reg["fkemail"]?.ToString() ?? "";
+        campoFkIdRol = Convert.ToInt32(reg["fkidrol"] ?? 0);
+        mostrarFormulario = true;
+        mensaje = string.Empty;
+    }
+
+    private async Task GuardarRegistro()
+    {
+        if (string.IsNullOrEmpty(campoFkEmail) || campoFkIdRol == 0)
+        {
+            mensaje = "Debe seleccionar un usuario y un rol.";
+            exito = false;
+            return;
+        }
+
+        var datos = new Dictionary<string, object?>
+        {
+            ["fkemail"] = campoFkEmail,
+            ["fkidrol"] = campoFkIdRol
+        };
+
+        if (editando)
+        {
+            var confirmar = await JS.InvokeAsync<bool>("confirm",
+                $"¿Está seguro de actualizar el registro #{campoId}?");
+            if (!confirmar) return;
+            var resultado = await Api.ActualizarAsync("rol_usuario", "id", campoId.ToString(), datos);
+            exito = resultado.exito;
+            mensaje = resultado.mensaje;
+        }
+        else
+        {
+            var resultado = await Api.CrearAsync("rol_usuario", datos);
+            exito = resultado.exito;
+            mensaje = resultado.mensaje;
+        }
+
+        if (exito)
+        {
+            mostrarFormulario = false;
+            await CargarRegistros();
+        }
+    }
+
+    private async Task EliminarRegistro(Dictionary<string, object?> reg)
+    {
+        string id = reg["id"]?.ToString() ?? "";
+        var confirmar = await JS.InvokeAsync<bool>("confirm",
+            $"¿Está seguro de eliminar el registro #{id}?");
+        if (!confirmar) return;
+        var resultado = await Api.EliminarAsync("rol_usuario", "id", id);
+        exito = resultado.exito;
+        mensaje = resultado.mensaje;
+
+        if (exito)
+            await CargarRegistros();
+    }
+
+    private void Cancelar()
+    {
+        mostrarFormulario = false;
+        mensaje = string.Empty;
+    }
+}
