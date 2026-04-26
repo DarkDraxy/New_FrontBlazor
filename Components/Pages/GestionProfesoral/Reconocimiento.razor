@@ -1,0 +1,259 @@
+@page "/reconocimiento"
+@rendermode InteractiveServer
+@inject FrontBlazorTutorial.Services.ApiService Api
+
+<PageTitle>Reconocimiento</PageTitle>
+
+<div class="container mt-4">
+    <h3>Reconocimiento</h3>
+
+    @* ───────── ALERTA ───────── *@
+    @if (!string.IsNullOrEmpty(mensaje))
+    {
+        <div class="alert @(exito ? "alert-success" : "alert-danger") alert-dismissible fade show">
+            @mensaje
+            <button type="button" class="btn-close" @onclick="() => mensaje = string.Empty"></button>
+        </div>
+    }
+
+    @* ───────── BOTON NUEVO ───────── *@
+    @if (!mostrarFormulario)
+    {
+        <button class="btn btn-primary mb-3" @onclick="NuevoRegistro">Nueva Red</button>
+    }
+
+    @* ───────── LIMITE DE REGISTROS ───────── *@
+    <div class="d-flex align-items-center mb-3">
+        <label class="form-label me-2 mb-0">Limite:</label>
+        <input class="form-control me-2" type="number" style="width:100px" @bind="limite" />
+        <button class="btn btn-outline-secondary" @onclick="CargarRegistros">Cargar</button>
+    </div>
+
+    @* ───────── FORMULARIO ───────── *@
+    @if (mostrarFormulario)
+    {
+        <div class="card mb-3">
+            <div class="card-header">
+                @(editando ? "Editar Reconocimiento" : "Nuevo Reconocimiento")
+            </div>
+            <div class="card-body">
+                <div class="row">
+                     <!--<div class="col-md-6 mb-3">
+                        <label class="form-label">id</label>
+                        <input class="form-control" @bind="id" />
+                    </div>  --->
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Tipo</label>
+                        <input class="form-control" @bind="tipo" />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Fecha</label>
+                        <input class="form-control" type="date" @bind="fecha" />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Institución</label>
+                        <input class="form-control" @bind="institucion" />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Nombre</label>
+                        <input class="form-control" @bind="nombre" />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Ambito</label>
+                        <input class="form-control" @bind="ambito" />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Docente</label>
+                        <select class="form-select" @bind="docente">
+                            <option value="0">Seleccione un docente</option>
+                            @foreach (var d in registrosForeignKey)
+                            {
+                                    <option value="@d["cedula"]">
+                                    @d["nombres"] @d["apellidos"]
+                                    </option>
+                            }
+                        </select>
+                    </div> 
+                </div>
+                <button class="btn btn-success me-2" @onclick="GuardarRegistro">Guardar</button>
+                <button class="btn btn-secondary" @onclick="Cancelar">Cancelar</button>
+            </div>
+        </div>
+    }
+
+    @* ───────── SPINNER ───────── *@
+    @if (cargando)
+    {
+        <div class="d-flex justify-content-center my-4">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+        </div>
+    }
+
+    @* ───────── TABLA ───────── *@
+    @if (!cargando && registros.Any())
+    {
+        <table class="table table-striped table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>Id</th>
+                    <th>Tipo</th>
+                    <th>Fecha</th>
+                    <th>Institución</th>
+                    <th>Nombre</th>
+                    <th>Ambito</th>
+                    <th>Docente</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var reg in registros)
+                {
+                    <tr>
+                        <td>@reg["id"]</td>
+                        <td>@reg["tipo"]</td>
+                        <td>@reg["fecha"]</td>
+                        <td>@reg["institucion"]</td>
+                        <td>@reg["nombre"]</td>
+                        <td>@reg["ambito"]</td>
+                        <td>
+                                @{
+                                    var docenteId = Convert.ToInt32(reg["docente"]);
+                                    var docenteInfo = registrosForeignKey
+                                        .FirstOrDefault(d => Convert.ToInt32(d["cedula"]) == docenteId);
+                                }
+                                @((docenteInfo != null)
+                                    ? $"{docenteInfo["nombres"]} {docenteInfo["apellidos"]}"
+                                    : reg["docente"])
+                            </td>
+                        <td>
+                            <button class="btn btn-warning btn-sm me-1"
+                                    @onclick="() => EditarRegistro(reg)">Editar</button>
+                            <button class="btn btn-danger btn-sm"
+                                    @onclick="() => EliminarRegistro(reg)">Eliminar</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+
+    @if (!cargando && !registros.Any())
+    {
+        <div class="alert alert-warning">No se encontraron registros en la tabla red.</div>
+    }
+</div>
+
+@code {
+    private List<Dictionary<string, object?>> registros = new();
+    private List<Dictionary<string, object?>> registrosForeignKey = new();//para docente
+
+    private bool cargando = true;
+    private bool mostrarFormulario = false;
+    private bool editando = false;
+    private string mensaje = string.Empty;
+    private bool exito = false;
+    
+    // Campos del formulario
+    private int id = 0;
+    private string tipo = string.Empty;
+    private DateTime fecha = DateTime.Now;
+    private string nombre = string.Empty;
+    private string institucion = string.Empty;
+    private string ambito = string.Empty;
+    private int docente = 0;
+    private int? limite = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarRegistros();
+    }
+
+    private async Task CargarRegistros()
+    {
+        cargando = true;
+        registros = await Api.ListarAsync("reconocimiento", limite);
+        registrosForeignKey = await Api.ListarAsync("docente");//para docente
+        cargando = false;
+    }
+
+    private void NuevoRegistro()
+    {
+        editando = false;
+        id = 0;
+        tipo = string.Empty;
+        fecha = DateTime.Now;
+        nombre = string.Empty;
+        institucion = string.Empty;
+        ambito = string.Empty;
+        docente = 0;
+        mostrarFormulario = true;
+        mensaje = string.Empty;
+    }
+
+    private void EditarRegistro(Dictionary<string, object?> reg)
+    {
+        editando = true;
+        id = Convert.ToInt32(reg["id"] ?? 0);
+        tipo = reg["tipo"]?.ToString() ?? "";
+        fecha = DateTime.Parse(reg["fecha"]?.ToString() ?? DateTime.Now.ToString());
+        nombre = reg["nombre"]?.ToString() ?? "";
+        institucion = reg["institucion"]?.ToString() ?? "";
+        ambito = reg["ambito"]?.ToString() ?? "";
+        docente = Convert.ToInt32(reg["docente"] ?? 0);
+        mostrarFormulario = true;
+        mensaje = string.Empty;
+    }
+
+    private async Task GuardarRegistro()
+    {
+        var datos = new Dictionary<string, object?>
+        {
+            //["id"] = id,
+            ["tipo"] = tipo,
+            ["fecha"] = fecha,
+            ["institucion"] = institucion,
+            ["nombre"] = nombre,
+            ["ambito"] = ambito,
+            ["docente"] = docente
+        };
+
+        if (editando)
+        {
+            //datos.Remove("id");
+            var resultado = await Api.ActualizarAsync("reconocimiento", "id", id.ToString(), datos);
+            exito = resultado.exito;
+            mensaje = resultado.mensaje;
+        }
+        else
+        {
+            var resultado = await Api.CrearAsync("reconocimiento", datos);
+            exito = resultado.exito;
+            mensaje = resultado.mensaje;
+        }
+
+        if (exito)
+        {
+            mostrarFormulario = false;
+            await CargarRegistros();
+        }
+    }
+
+    private async Task EliminarRegistro(Dictionary<string, object?> reg)
+    {
+        string codigo = reg["id"]?.ToString() ?? "";
+        var resultado = await Api.EliminarAsync("reconocimiento", "id", codigo);
+        exito = resultado.exito;
+        mensaje = resultado.mensaje;
+
+        if (exito)
+            await CargarRegistros();
+    }
+
+    private void Cancelar()
+    {
+        mostrarFormulario = false;
+        mensaje = string.Empty;
+    }
+}
