@@ -380,7 +380,10 @@ public class AuthService
                         if (!dict.ContainsKey("column_name") && dict.ContainsKey("nombre"))
                             dict["column_name"] = dict["nombre"];
                         if (!dict.ContainsKey("is_primary_key") && dict.ContainsKey("es_primary_key"))
-                            dict["is_primary_key"] = dict["es_primary_key"]?.ToString() == "True" ? "YES" : "NO";
+                        {
+                            var val = dict["es_primary_key"]?.ToString()?.ToLower();
+                            dict["is_primary_key"] = (val == "true" || val == "yes" || val == "1") ? "YES" : "NO";
+                        }
                         columnas.Add(dict);
                     }
 
