@@ -1,11 +1,14 @@
 using FrontBlazorTutorial.Components;
 using FrontBlazorTutorial.Services;
+using MudBlazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Agregar servicios de Blazor Server
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+builder.Services.AddMudServices();
 
 // Configurar HttpClient para conectarse a la API
 // La URL base se lee de appsettings.json

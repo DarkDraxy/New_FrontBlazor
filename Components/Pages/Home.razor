@@ -1,77 +1,71 @@
 @page "/"
 @inject FrontBlazorTutorial.Services.ApiService Api
+@inject FrontBlazorTutorial.Services.AuthService Auth
 
 <PageTitle>CRUD Facturas</PageTitle>
 
-<div class="container mt-4">
-    <h1>CRUD - Base de Datos Facturas</h1>
+<div>
+    <h1>Bienvenido a CRUD Facturas</h1>
     <p class="lead">
-        Frontend Blazor que consume la API generica
-        <strong>ApiGenericaCsharp</strong> para gestionar tablas
-        de una base de datos.
+        Hola @(Auth.NombreUsuario ?? Auth.Usuario ?? "usuario"), usa el menu superior para navegar a las tablas que tienes habilitadas.
     </p>
-
-    <div class="alert alert-info">
-        <strong>Tablas disponibles:</strong> Producto, Persona, Usuario, Empresa, Rol, Ruta, Cliente, Vendedor, Factura.
-        <br />
-        Use el menu lateral para navegar a cada tabla.
-    </div>
 
     @if (diagnostico != null)
     {
-        <div class="card mt-4 border-secondary">
-            <div class="card-header bg-secondary bg-opacity-10 text-muted py-2">
-                <small><strong>Conexion activa</strong></small>
+        <div class="card mt-4">
+            <div class="card-header">
+                <span class="status-dot status-dot-success"></span>
+                Conexion activa
             </div>
-            <div class="card-body py-2">
-                <table class="table table-sm table-borderless mb-0" style="font-size: 0.85rem;">
-                    <tbody>
-                        @if (diagnostico.ContainsKey("proveedor"))
-                        {
-                            <tr>
-                                <td class="text-muted" style="width:160px">Proveedor</td>
-                                <td><strong>@diagnostico["proveedor"]</strong></td>
-                            </tr>
-                        }
-                        @if (diagnostico.ContainsKey("baseDatos"))
-                        {
-                            <tr>
-                                <td class="text-muted">Base de datos</td>
-                                <td><strong>@diagnostico["baseDatos"]</strong></td>
-                            </tr>
-                        }
-                        @if (diagnostico.ContainsKey("version"))
-                        {
-                            <tr>
-                                <td class="text-muted">Version</td>
-                                <td><small>@(diagnostico["version"].Length > 80 ? diagnostico["version"][..80] + "..." : diagnostico["version"])</small></td>
-                            </tr>
-                        }
-                        @if (diagnostico.ContainsKey("direccionIP"))
-                        {
-                            <tr>
-                                <td class="text-muted">Servidor</td>
-                                <td>
-                                    @diagnostico["direccionIP"]@if (diagnostico.ContainsKey("puerto")){<text>:@diagnostico["puerto"]</text>}
-                                </td>
-                            </tr>
-                        }
-                        @if (diagnostico.ContainsKey("usuarioConectado"))
-                        {
-                            <tr>
-                                <td class="text-muted">Usuario</td>
-                                <td>@diagnostico["usuarioConectado"]</td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
+            <div class="card-body">
+                <dl style="display:grid; grid-template-columns: 160px 1fr; gap:8px 16px; margin:0;">
+                    @if (diagnostico.ContainsKey("proveedor"))
+                    {
+                        <dt class="text-muted">Proveedor</dt>
+                        <dd style="margin:0;">
+                            <span class="badge">@diagnostico["proveedor"]</span>
+                        </dd>
+                    }
+                    @if (diagnostico.ContainsKey("baseDatos"))
+                    {
+                        <dt class="text-muted">Base de datos</dt>
+                        <dd style="margin:0;"><strong>@diagnostico["baseDatos"]</strong></dd>
+                    }
+                    @if (diagnostico.ContainsKey("version"))
+                    {
+                        <dt class="text-muted">Version</dt>
+                        <dd style="margin:0; font-size:13px;">
+                            @(diagnostico["version"].Length > 80 ? diagnostico["version"][..80] + "..." : diagnostico["version"])
+                        </dd>
+                    }
+                    @if (diagnostico.ContainsKey("direccionIP"))
+                    {
+                        <dt class="text-muted">Servidor</dt>
+                        <dd style="margin:0;">
+                            @diagnostico["direccionIP"]@if (diagnostico.ContainsKey("puerto")){<text>:@diagnostico["puerto"]</text>}
+                        </dd>
+                    }
+                    @if (diagnostico.ContainsKey("usuarioConectado"))
+                    {
+                        <dt class="text-muted">Usuario</dt>
+                        <dd style="margin:0;">@diagnostico["usuarioConectado"]</dd>
+                    }
+                </dl>
             </div>
         </div>
     }
     else if (cargado)
     {
-        <div class="mt-4">
-            <small class="text-muted">No se pudo obtener informacion de conexion de la API.</small>
+        <div class="card mt-4">
+            <div class="card-header" style="border-left-color: var(--error) !important;">
+                <span class="status-dot status-dot-error"></span>
+                Sin conexion
+            </div>
+            <div class="card-body">
+                <p class="text-muted" style="margin:0;">
+                    No se pudo obtener informacion de conexion de la API.
+                </p>
+            </div>
         </div>
     }
 </div>

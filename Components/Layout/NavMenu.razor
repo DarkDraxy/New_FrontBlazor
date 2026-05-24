@@ -1,152 +1,56 @@
-<div class="top-row ps-3 navbar navbar-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="">CRUD Facturas</a>
-    </div>
-</div>
+@inject FrontBlazorTutorial.Services.AuthService _auth
 
-<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
+<MudButton Href="/" Variant="Variant.Text" Color="Color.Inherit" StartIcon="@Icons.Material.Filled.Home">
+    Home
+</MudButton>
 
-<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
-    <nav class="nav flex-column">
+@if (PermiteAlguna("/usuario", "/rol", "/ruta"))
+{
+    <MudMenu Label="Seguridad" Color="Color.Inherit" Variant="Variant.Text" EndIcon="@Icons.Material.Filled.KeyboardArrowDown">
+        @if (_auth.TieneAcceso("/usuario")) { <MudMenuItem Href="/usuario">Usuario</MudMenuItem> }
+        @if (_auth.TieneAcceso("/rol")) { <MudMenuItem Href="/rol">Rol</MudMenuItem> }
+        @if (_auth.TieneAcceso("/ruta")) { <MudMenuItem Href="/ruta">Ruta</MudMenuItem> }
+    </MudMenu>
+}
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
-            </NavLink>
-        </div>
-    <!--
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="producto">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Producto
-            </NavLink>
-        </div>
+@if (PermiteAlguna("/empresa", "/persona", "/cliente", "/vendedor", "/producto", "/factura"))
+{
+    <MudMenu Label="Negocio" Color="Color.Inherit" Variant="Variant.Text" EndIcon="@Icons.Material.Filled.KeyboardArrowDown">
+        @if (_auth.TieneAcceso("/empresa")) { <MudMenuItem Href="/empresa">Empresa</MudMenuItem> }
+        @if (_auth.TieneAcceso("/persona")) { <MudMenuItem Href="/persona">Persona</MudMenuItem> }
+        @if (_auth.TieneAcceso("/cliente")) { <MudMenuItem Href="/cliente">Cliente</MudMenuItem> }
+        @if (_auth.TieneAcceso("/vendedor")) { <MudMenuItem Href="/vendedor">Vendedor</MudMenuItem> }
+        @if (_auth.TieneAcceso("/producto")) { <MudMenuItem Href="/producto">Producto</MudMenuItem> }
+        @if (_auth.TieneAcceso("/factura")) { <MudMenuItem Href="/factura">Factura</MudMenuItem> }
+    </MudMenu>
+}
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="persona">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Persona
-            </NavLink>
-        </div>
+@if (PermiteAlguna("/docente", "/experiencia", "/evaluacion-docente", "/apoyo-profesoral", "/reconocimiento", "/Red_Docente"))
+{
+    <MudMenu Label="Docencia" Color="Color.Inherit" Variant="Variant.Text" EndIcon="@Icons.Material.Filled.KeyboardArrowDown">
+        @if (_auth.TieneAcceso("/docente")) { <MudMenuItem Href="/docente">Docentes</MudMenuItem> }
+        @if (_auth.TieneAcceso("/experiencia")) { <MudMenuItem Href="/experiencia">Experiencias</MudMenuItem> }
+        @if (_auth.TieneAcceso("/evaluacion-docente")) { <MudMenuItem Href="/evaluacion-docente">Evaluaciones</MudMenuItem> }
+        @if (_auth.TieneAcceso("/apoyo-profesoral")) { <MudMenuItem Href="/apoyo-profesoral">Apoyo Profesoral</MudMenuItem> }
+        @if (_auth.TieneAcceso("/reconocimiento")) { <MudMenuItem Href="/reconocimiento">Reconocimientos</MudMenuItem> }
+        @if (_auth.TieneAcceso("/Red_Docente")) { <MudMenuItem Href="/Red_Docente">Red Docente</MudMenuItem> }
+    </MudMenu>
+}
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="usuario">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Usuario
-            </NavLink>
-        </div>
+@if (PermiteAlguna("/linea-investigacion", "/red", "/area-conocimiento", "/estudios-realizados", "/estudio-ac", "/beca", "/intereses_futuros", "/termino_clave"))
+{
+    <MudMenu Label="Academico" Color="Color.Inherit" Variant="Variant.Text" EndIcon="@Icons.Material.Filled.KeyboardArrowDown">
+        @if (_auth.TieneAcceso("/linea-investigacion")) { <MudMenuItem Href="/linea-investigacion">Lineas de Investigacion</MudMenuItem> }
+        @if (_auth.TieneAcceso("/red")) { <MudMenuItem Href="/red">Red</MudMenuItem> }
+        @if (_auth.TieneAcceso("/area-conocimiento")) { <MudMenuItem Href="/area-conocimiento">Areas de Conocimiento</MudMenuItem> }
+        @if (_auth.TieneAcceso("/estudios-realizados")) { <MudMenuItem Href="/estudios-realizados">Estudios Realizados</MudMenuItem> }
+        @if (_auth.TieneAcceso("/estudio-ac")) { <MudMenuItem Href="/estudio-ac">Estudio - Area</MudMenuItem> }
+        @if (_auth.TieneAcceso("/beca")) { <MudMenuItem Href="/beca">Becas</MudMenuItem> }
+        @if (_auth.TieneAcceso("/intereses_futuros")) { <MudMenuItem Href="/intereses_futuros">Intereses Futuros</MudMenuItem> }
+        @if (_auth.TieneAcceso("/termino_clave")) { <MudMenuItem Href="/termino_clave">Terminos Clave</MudMenuItem> }
+    </MudMenu>
+}
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="empresa">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Empresa
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="rol">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Rol
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="ruta">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Ruta
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="cliente">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Cliente
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="vendedor">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Vendedor
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="factura">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Factura
-            </NavLink>
-        </div>-->
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="usuario">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Usuario
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="red">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Red
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="beca">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Beca
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="termino_clave">
-                 <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Termino Clave
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="intereses_futuros">
-                 <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Intereses Futuros
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="Red_Docente">
-                 <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Red Docente
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="reconocimiento">
-                 <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Reconocimiento
-            </NavLink>
-        </div>
-        
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="linea-investigacion">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Lineas Investigacion
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="docente">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Docentes
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="experiencia">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Experiencias
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="evaluacion-docente">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Evaluaciones
-            </NavLink>
-        </div>
-
-         <div class="nav-item px-3">
-            <NavLink class="nav-link" href="area-conocimiento">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Áreas Conocimiento
-            </NavLink>
-        </div>
-                <div class="nav-item px-3">
-            <NavLink class="nav-link" href="estudios-realizados">
-                <span class="bi bi-mortarboard-fill" aria-hidden="true"></span> Estudios Realizados
-            </NavLink>
-        </div>
-                <div class="nav-item px-3">
-            <NavLink class="nav-link" href="estudio-ac">
-                <span class="bi bi-link-45deg" aria-hidden="true"></span> Estudio y Áreas
-            </NavLink>
-        </div>
-                <div class="nav-item px-3">
-            <NavLink class="nav-link" href="apoyo-profesoral">
-                <span class="bi bi-person-heart" aria-hidden="true"></span> Apoyo Profesoral
-            </NavLink>
-        </div>
-    </nav>
-</div>
+@code {
+    private bool PermiteAlguna(params string[] rutas) => rutas.Any(r => _auth.TieneAcceso(r));
+}
