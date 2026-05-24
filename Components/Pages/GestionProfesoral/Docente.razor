@@ -234,8 +234,8 @@
     private async Task CargarRegistros()
     {
         cargando = true;
-        registros = await Api.ListarAsync("docente");
-        //registros = todos.Where(r => r["activo"]?.ToString() == "True" || r["activo"]?.ToString() == "true" || r["activo"]?.ToString() == "1").ToList();
+        var todos = await Api.ListarAsync("docente");
+        registros = todos.Where(r => r["activo"]?.ToString() == "True" || r["activo"]?.ToString() == "true" || r["activo"]?.ToString() == "1").ToList();
         cargando = false;
     }
     // ===== VER DETALLE CON STORED PROCEDURE =====
@@ -313,7 +313,7 @@
         campoFechaNacimiento = DateTime.TryParse(reg["fecha_nacimiento"]?.ToString(), out DateTime fn) ? DateOnly.FromDateTime(fn) : null;
         campoCorreo = reg["correo"]?.ToString() ?? "";
         campoTelefono = reg["telefono"]?.ToString() ?? "";
-        campoNacionalidad = reg["nacionalidad"]?.ToString() ?? "";
+        campoNacionalidad = reg["nacionalidaad"]?.ToString() ?? "";
         campoEscalafon = reg["escalafon"]?.ToString() ?? "";
         campoLineaInvestigacion = int.TryParse(reg["linea_investigacion_principal"]?.ToString(), out int li) ? li : 0;
         campoUrlCvlac = reg["url_cvlac"]?.ToString() ?? "";
@@ -342,7 +342,7 @@
             ["fecha_nacimiento"] = campoFechaNacimiento?.ToString("yyyy-MM-dd"),
             ["correo"] = string.IsNullOrEmpty(campoCorreo) ? null : campoCorreo,
             ["telefono"] = string.IsNullOrEmpty(campoTelefono) ? null : campoTelefono,
-            ["nacionalidad"] = string.IsNullOrEmpty(campoNacionalidad) ? null : campoNacionalidad,
+            ["nacionalidaad"] = string.IsNullOrEmpty(campoNacionalidad) ? null : campoNacionalidad,
             ["escalafon"] = string.IsNullOrEmpty(campoEscalafon) ? null : campoEscalafon,
             ["linea_investigacion_principal"] = campoLineaInvestigacion == 0 ? null : campoLineaInvestigacion,
             ["url_cvlac"] = string.IsNullOrEmpty(campoUrlCvlac) ? null : campoUrlCvlac

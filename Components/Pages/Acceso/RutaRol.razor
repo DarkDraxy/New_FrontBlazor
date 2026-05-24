@@ -1,0 +1,217 @@
+@page "/rutarol"
+@rendermode InteractiveServer
+@inject FrontBlazorTutorial.Services.ApiService Api
+@inject IJSRuntime JS
+
+<PageTitle>RutaRol</PageTitle>
+
+<div class="container mt-4">
+    <h3>Asignación de Rutas a Roles</h3>
+
+    @* ───────── ALERTA ───────── *@
+    @if (!string.IsNullOrEmpty(mensaje))
+    {
+        <div class="alert @(exito ? "alert-success" : "alert-danger") alert-dismissible fade show">
+            @mensaje
+            <button type="button" class="btn-close" @onclick="() => mensaje = string.Empty"></button>
+        </div>
+    }
+
+    @* ───────── BOTON NUEVO ───────── *@
+    @if (!mostrarFormulario)
+    {
+        <button class="btn btn-primary mb-3" @onclick="NuevoRegistro">Nueva Asignación</button>
+    }
+
+    @* ───────── LIMITE DE REGISTROS ───────── *@
+    <div class="d-flex align-items-center mb-3">
+        <label class="form-label me-2 mb-0">Limite:</label>
+        <input class="form-control me-2" type="number" style="width:100px" @bind="limite" />
+        <button class="btn btn-outline-secondary" @onclick="CargarRegistros">Cargar</button>
+    </div>
+
+    @* ───────── FORMULARIO ───────── *@
+    @if (mostrarFormulario)
+    {
+        <div class="card mb-3">
+            <div class="card-header">Nueva Asignación</div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Rol</label>
+                        <select class="form-select" @bind="campoFkidrol">
+                            <option value="">-- Seleccione un rol --</option>
+                            @foreach (var rol in roles)
+                            {
+                                <option value="@rol["id"]">@rol["nombre"]</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Ruta</label>
+                        <select class="form-select" @bind="campoFkidruta">
+                            <option value="">-- Seleccione una ruta --</option>
+                            @foreach (var ruta in rutas)
+                            {
+                                <option value="@ruta["id"]">@ruta["ruta"]</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <button class="btn btn-success me-2" @onclick="GuardarRegistro">Guardar</button>
+                <button class="btn btn-secondary" @onclick="Cancelar">Cancelar</button>
+            </div>
+        </div>
+    }
+
+    @* ───────── SPINNER ───────── *@
+    @if (cargando)
+    {
+        <div class="d-flex justify-content-center my-4">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+        </div>
+    }
+
+    @* ───────── TABLA ───────── *@
+    @if (!cargando && registros.Any())
+    {
+        <table class="table table-striped table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>Id</th>
+                    <th>Rol</th>
+                    <th>Ruta</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var reg in registros)
+                {
+                    <tr>
+                        <td>@reg["id"]</td>
+                        <td>@ObtenerNombreRol(reg["fkidrol"]?.ToString())</td>
+                        <td>@ObtenerNombreRuta(reg["fkidruta"]?.ToString())</td>
+                        <td>
+                            <button class="btn btn-danger btn-sm"
+                                    @onclick="() => EliminarRegistro(reg)">Eliminar</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+
+    @if (!cargando && !registros.Any())
+    {
+        <div class="alert alert-warning">No se encontraron registros en la tabla rutarol.</div>
+    }
+</div>
+
+@code {
+    private List<Dictionary<string, object?>> registros = new();
+    private List<Dictionary<string, object?>> roles = new();
+    private List<Dictionary<string, object?>> rutas = new();
+
+    private bool cargando = true;
+    private bool mostrarFormulario = false;
+    private string mensaje = string.Empty;
+    private bool exito = false;
+    private int? limite = null;
+
+    private string campoFkidrol = string.Empty;
+    private string campoFkidruta = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Carga las tres tablas al mismo tiempo para no esperar una por una
+        var t1 = Api.ListarAsync("rutarol", limite);
+        var t2 = Api.ListarAsync("rol");
+        var t3 = Api.ListarAsync("ruta");
+        await Task.WhenAll(t1, t2, t3);
+
+        registros = t1.Result;
+        roles = t2.Result;
+        rutas = t3.Result;
+        cargando = false;
+    }
+
+    private async Task CargarRegistros()
+    {
+        cargando = true;
+        registros = await Api.ListarAsync("rutarol", limite);
+        cargando = false;
+    }
+
+    private void NuevoRegistro()
+    {
+        campoFkidrol = string.Empty;
+        campoFkidruta = string.Empty;
+        mostrarFormulario = true;
+        mensaje = string.Empty;
+    }
+
+    private async Task GuardarRegistro()
+    {
+        if (string.IsNullOrEmpty(campoFkidrol) || string.IsNullOrEmpty(campoFkidruta))
+        {
+            exito = false;
+            mensaje = "Debe seleccionar un rol y una ruta.";
+            return;
+        }
+
+        var datos = new Dictionary<string, object?>
+        {
+            ["fkidrol"] = campoFkidrol,
+            ["fkidruta"] = campoFkidruta
+        };
+
+        var resultado = await Api.CrearAsync("rutarol", datos);
+        exito = resultado.exito;
+        mensaje = resultado.mensaje;
+
+        if (exito)
+        {
+            mostrarFormulario = false;
+            await CargarRegistros();
+        }
+    }
+
+    private async Task EliminarRegistro(Dictionary<string, object?> reg)
+    {
+        string id = reg["id"]?.ToString() ?? "";
+        var confirmar = await JS.InvokeAsync<bool>("confirm",
+            $"¿Está seguro de eliminar esta asignación?");
+        if (!confirmar) return;
+
+        var resultado = await Api.EliminarAsync("rutarol", "id", id);
+        exito = resultado.exito;
+        mensaje = resultado.mensaje;
+
+        if (exito)
+            await CargarRegistros();
+    }
+
+    private void Cancelar()
+    {
+        mostrarFormulario = false;
+        mensaje = string.Empty;
+    }
+
+    // Busca el nombre del rol dado su id
+    private string ObtenerNombreRol(string? idRol)
+    {
+        if (string.IsNullOrEmpty(idRol)) return "-";
+        var rol = roles.FirstOrDefault(r => r["id"]?.ToString() == idRol);
+        return rol?["nombre"]?.ToString() ?? idRol;
+    }
+
+    // Busca la ruta dado su id
+    private string ObtenerNombreRuta(string? idRuta)
+    {
+        if (string.IsNullOrEmpty(idRuta)) return "-";
+        var ruta = rutas.FirstOrDefault(r => r["id"]?.ToString() == idRuta);
+        return ruta?["ruta"]?.ToString() ?? idRuta;
+    }
+}
