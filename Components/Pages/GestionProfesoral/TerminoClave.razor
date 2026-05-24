@@ -108,6 +108,7 @@
     
     // Campos del formulario
 
+    private string terminoViejo = string.Empty;
     private string termino = string.Empty;
     private string termino_ingles = string.Empty;
     private int? limite = null;
@@ -136,6 +137,7 @@
     private void EditarRegistro(Dictionary<string, object?> reg)
     {
         editando = true;
+        terminoViejo = reg["termino"]?.ToString() ?? "";
         termino = reg["termino"]?.ToString() ?? "";
         termino_ingles = reg["termino_ingles"]?.ToString() ?? "";
         mostrarFormulario = true;
@@ -152,8 +154,9 @@
 
         if (editando)
         {
-            datos.Remove("idr");
+            //datos.Remove("idr");
             var resultado = await Api.ActualizarAsync("termino_clave", "termino", termino, datos);
+            datos.Remove("termino_viejo");
             exito = resultado.exito;
             mensaje = resultado.mensaje;
         }

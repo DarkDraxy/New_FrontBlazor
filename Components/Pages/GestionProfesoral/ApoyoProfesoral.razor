@@ -62,6 +62,7 @@
                     <td>@reg["tipo"]</td>
                     <td>
                         <button class="btn btn-warning btn-sm" @onclick="() => Editar(reg)">Editar</button>
+                        <button class="btn btn-danger btn-sm" @onclick="() => EliminarRegistro(reg)">Eliminar</button>
                     </td>
                 </tr>
             }
@@ -70,18 +71,32 @@
 </div>
 
 @code {
+
+    private bool cargando = true;
+    private bool editando = false;
+    private bool exito = false;
+    private string mensaje = string.Empty;
     private List<Dictionary<string, object?>> registros = new();
     private List<Dictionary<string, object?>> listaEstudios = new();
-    private bool mostrarFormulario = false, editando = false;
+    private bool mostrarFormulario = false;
     private int estudio_i;
     private string inst_i = "", tipo_i = "";
     private bool con_apoyo_i;
+
+    private int? limite = null;
 
     protected override async Task OnInitializedAsync() {
         await Cargar();
         listaEstudios = await Api.ListarAsync("estudios_realizados");
     }
 
+/*
+    private async Task CargarRegistros()
+    {
+        cargando = true;
+        registros = await Api.ListarAsync("apoyo_profesoral", limite);
+        cargando = false;
+    }*/
     private async Task Cargar() => registros = await Api.ListarAsync("apoyo_profesoral");
 
     private void Editar(Dictionary<string, object?> reg) {
@@ -97,5 +112,16 @@
         var p = new Dictionary<string, object?> { ["estudios"] = estudio_i, ["con_apoyo"] = con_apoyo_i, ["institucion"] = inst_i, ["tipo"] = tipo_i };
         var res = await Sp.EjecutarSpAsync(editando ? "sp_ActualizarApoyoProfesoral" : "sp_InsertarApoyoProfesoral", p);
         if (res.exito) { mostrarFormulario = false; await Cargar(); }
+    }
+
+    private async Task EliminarRegistro(Dictionary<string, object?> reg)
+    {
+        string codigo = reg["estudios"]?.ToString() ?? "";
+        var resultado = await Api.EliminarAsync("apoyo_profesoral", "estudios", codigo);
+        exito = resultado.exito;
+        mensaje = resultado.mensaje;
+
+        if (exito)
+            await Cargar();
     }
 }

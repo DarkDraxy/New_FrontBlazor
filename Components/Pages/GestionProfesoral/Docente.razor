@@ -86,7 +86,7 @@
                     <div class="col-md-4"><strong>Cargo:</strong> @ObtenerValor(docenteDetalle, "cargo")</div>
                     <div class="col-md-4"><strong>Correo:</strong> @ObtenerValor(docenteDetalle, "correo")</div>
                     <div class="col-md-4 mt-2"><strong>Telefono:</strong> @ObtenerValor(docenteDetalle, "telefono")</div>
-                    <div class="col-md-4 mt-2"><strong>Nacionalidad:</strong> @ObtenerValor(docenteDetalle, "nacionalidad")</div>
+                    <div class="col-md-4 mt-2"><strong>Nacionalidad:</strong> @ObtenerValor(docenteDetalle, "nacionalidaad")</div>
                     <div class="col-md-4 mt-2"><strong>Linea:</strong> @ObtenerValor(docenteDetalle, "nombre_linea")</div>
                 </div>
             </div>
@@ -218,6 +218,8 @@
     private string campoGenero = string.Empty;
     private string campoCargo = string.Empty;
     private DateOnly? campoFechaNacimiento;
+
+    private DateOnly fecha_actualizacion = DateOnly.FromDateTime(DateTime.Now);
     private string campoCorreo = string.Empty;
     private string campoTelefono = string.Empty;
     private string campoNacionalidad = string.Empty;
@@ -345,7 +347,9 @@
             ["nacionalidaad"] = string.IsNullOrEmpty(campoNacionalidad) ? null : campoNacionalidad,
             ["escalafon"] = string.IsNullOrEmpty(campoEscalafon) ? null : campoEscalafon,
             ["linea_investigacion_principal"] = campoLineaInvestigacion == 0 ? null : campoLineaInvestigacion,
-            ["url_cvlac"] = string.IsNullOrEmpty(campoUrlCvlac) ? null : campoUrlCvlac
+            ["url_cvlac"] = string.IsNullOrEmpty(campoUrlCvlac) ? null : campoUrlCvlac,
+            ["fecha_actualizacion"] = fecha_actualizacion.ToString("yyyy-MM-dd"),
+            ["activo"] = 1
         };
 
         if (editando)
